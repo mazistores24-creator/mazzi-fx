@@ -110,6 +110,24 @@ Run it through the integration tests:
 
 This is the first complete local verification path. It does not contact Deriv and cannot place a real order.
 
+The trading engine also supports local paper simulation when `TradingEngineConfig.paperTrading` is `true`. In that mode it does not call broker account, quote, order, or status endpoints; it records a simulated fill at the setup's requested entry price. Set `paperTrading: false` only when intentionally testing an authenticated broker transport. The `PAPER_TRADING` environment variable is not automatically wired into `createTradingEngine`, so pass the setting explicitly in the engine configuration.
+
+### Replay your own H4/M5 candle data
+
+The offline replay accepts two CSV files with `timestamp,high,low,close` columns. Timestamps must be UTC candle-close times, strictly increasing, and expressed as epoch milliseconds or ISO-8601 timestamps. Provide at least 52 H4 and 53 M5 candles. Keep the files local; the command does not upload or fetch data.
+
+```powershell
+npm run paper:replay -- --h4 .\data\H4.csv --m5 .\data\M5.csv --symbol EURUSD
+```
+
+The default starting balance is 10,000 and risk is capped at 0.25% per trade. To allow the news gate, explicitly assert that the replay period is clear of news blackouts:
+
+```powershell
+npm run paper:replay -- --h4 .\data\H4.csv --m5 .\data\M5.csv --symbol EURUSD --news-clear
+```
+
+This flag is only an operator assertion; the replay does not retrieve historical news. The report is a simplified quote-currency simulation, not broker lot sizing, a broker fill, or evidence of live performance. If both stop-loss and take-profit are touched in the same candle, the replay records the stop-loss first. Use `--help` for supported options.
+
 ## 7. Optional: configure a Deriv demo account
 
 Only do this after the local mock tests pass.

@@ -10,7 +10,7 @@
   <main class="shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">AUTOMATED EXECUTION / DERIV</p>
+        <p class="eyebrow">LOCAL PAPER SIMULATION / NO LIVE FEED</p>
         <h1>Trading Operations Console</h1>
       </div>
       <div class="connection"><span id="healthDot" class="dot"></span><span id="healthText">Checking system</span></div>
@@ -21,8 +21,8 @@
       <article class="hero-panel"><p class="label">Execution mode</p><strong id="mode">--</strong><span id="scanner">--</span></article>
     </section>
     <section class="content-grid">
-      <article class="panel wide"><div class="panel-heading"><div><p class="eyebrow">LIVE STATE</p><h2>Strategy pipeline</h2></div><span id="summary" class="status-chip">Loading</span></div><div class="pipeline"><div><span>H4 context</span><b id="h4Status">--</b></div><div><span>M5 execution</span><b id="m5Status">--</b></div><div><span>Active setups</span><b id="setups">--</b></div></div></article>
-      <article class="panel"><div class="panel-heading"><div><p class="eyebrow">RISK</p><h2>Open positions</h2></div><span id="positions" class="big-number">--</span></div><p class="muted">Position monitoring, protection state, and drawdown gates are evaluated by the strategy engine.</p></article>
+      <article class="panel wide"><div class="panel-heading"><div><p class="eyebrow">LOCAL STATUS</p><h2>Strategy pipeline</h2></div><span id="summary" class="status-chip">Loading</span></div><div class="pipeline"><div><span>H4 context</span><b id="h4Status">--</b></div><div><span>M5 execution</span><b id="m5Status">--</b></div><div><span>Active setups</span><b id="setups">--</b></div></div></article>
+      <article class="panel"><div class="panel-heading"><div><p class="eyebrow">PAPER ONLY</p><h2>Open positions</h2></div><span id="positions" class="big-number">--</span></div><p class="muted">This dashboard is not connected to the historical replay, a live market feed, or a broker. Displayed account values are placeholders.</p></article>
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">ALERT STREAM</p><h2>Latest alerts</h2></div></div><ul id="alerts" class="alerts"><li class="muted">Waiting for telemetry...</li></ul></article>
     </section>
     <footer><span>M5 execution / H4 context</span><span id="updated">Updated --</span></footer>

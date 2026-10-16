@@ -26,6 +26,7 @@ export * from './strategy/execution-integrity.js';
 export * from './strategy/execution-recovery.js';
 export * from './strategy/live-execution.js';
 export * from './strategy/paper-trading.js';
+export * from './strategy/paper-replay.js';
 export * from './brokers/execution-pipeline.js';
 export * from './brokers/deriv-api.js';
 export * from './brokers/transport.js';
@@ -38,6 +39,7 @@ export * from './ops/logger.js';
 export * from './ops/runtime-health.js';
 
 import type { TradeEvaluationInput } from './config/types.js';
+import { evaluateRsiConfirmation } from './strategy/confirmations.js';
 
 export function evaluateTrade(input: TradeEvaluationInput) {
   const checks = {
@@ -48,7 +50,7 @@ export function evaluateTrade(input: TradeEvaluationInput) {
     m5Fib: input.m5FibRetest && input.m5FibZone,
     supplyDemand: input.supplyDemand,
     ichimoku: input.ichimoku,
-    rsi: input.rsi <= 10,
+    rsi: input.h4Trend !== 'neutral' && evaluateRsiConfirmation(input.rsi, input.h4Trend).allowed,
     m5Confirmation: input.m5Confirmation,
     risk: input.riskOk,
     news: input.newsOk,

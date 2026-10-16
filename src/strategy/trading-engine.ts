@@ -22,6 +22,7 @@ export interface TradingEngineConfig {
   propFirmOk: boolean;
   newsOk: boolean;
   brokerOk: boolean;
+  paperTrading: boolean;
   maxDrawdownPercent: number;
   trailingEnabled: boolean;
   activationR: number;
@@ -56,7 +57,7 @@ export interface TradingCycleInput {
 
 export interface TradingCycleResult {
   allowed: boolean;
-  stage: 'blocked' | 'qualified' | 'executed';
+  stage: 'blocked' | 'qualified' | 'executed' | 'paper';
   reason: string;
   qualification: ReturnType<typeof qualifyTrade>;
   risk: ReturnType<typeof evaluateRiskSafety>;
@@ -76,6 +77,7 @@ export function createTradingEngine(
   dependencies: { stateStore?: PersistentStateStore; database?: TradeDatabase } = {},
 ): TradingEngine {
   let currentState: PersistentState | undefined;
+  let paperOrderSequence = 0;
 
   const persist = (input: TradingCycleInput, openPositions: PersistentState['openPositions'] = []) => {
     const state = savePersistentState({
@@ -92,8 +94,8 @@ export function createTradingEngine(
 
   return {
     evaluateAndExecute: async (input) => {
-      const account = await broker.getAccount();
-      const brokerConnected = account.balance > 0;
+      const account = config.paperTrading ? undefined : await broker.getAccount();
+      const brokerConnected = config.paperTrading || (account !== undefined && account.balance > 0);
       const risk = evaluateRiskSafety({
         accountEquity: input.accountEquity,
         riskPercent: config.riskPercent,
@@ -116,6 +118,7 @@ export function createTradingEngine(
         duplicateSetup: input.duplicateSetup,
       });
       const qualification = qualifyTrade({
+        direction: input.side === 'buy' ? 'bullish' : 'bearish',
         h4Valid: input.h4Valid,
         h4Breakout: input.h4Breakout,
         h4FibZone: input.h4FibZone,
@@ -151,6 +154,22 @@ export function createTradingEngine(
         stopLoss: input.stopLoss,
         takeProfit: input.takeProfit,
       };
+      if (config.paperTrading) {
+        const orderId = `paper-order-${++paperOrderSequence}`;
+        const position: ManagedPosition = {
+          symbol: input.symbol,
+          side: input.side === 'buy' ? 'long' : 'short',
+          entry: input.entry,
+          stopLoss: input.stopLoss,
+          takeProfit: input.takeProfit,
+          quantity: risk.lotSize,
+        };
+        persist(input, [{ symbol: position.symbol, side: position.side, entry: position.entry, stop: position.stopLoss }]);
+        dependencies.database?.recordTrade({ id: orderId, symbol: position.symbol, side: position.side, entry: position.entry, quantity: position.quantity, status: 'open', timestamp: Date.now() });
+        dependencies.database?.recordEvent({ type: 'paper-trade-simulated', payload: { symbol: input.symbol, orderId }, timestamp: Date.now() });
+        return { allowed: true, stage: 'paper', reason: 'paper trade simulated; no broker order submitted', qualification, risk, orderId, position };
+      }
+
       const submitted = await broker.placeOrder(order);
       const status = await broker.getOrderStatus(submitted.orderId);
       const recovery = createExecutionRecoveryPlan({

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "vitest run",
     "build": "tsc -p tsconfig.json",
-    "dashboard": "npm run build && node dist/dashboard/start.js"
+    "dashboard": "npm run build && node dist/dashboard/start.js",
+    "paper:replay": "npm run build && node dist/cli/paper-replay.js"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

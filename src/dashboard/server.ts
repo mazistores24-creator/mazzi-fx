@@ -22,8 +22,8 @@ const contentTypes: Record<string, string> = { '.html': 'text/html; charset=utf-
 
 export function createDashboardServer(options: DashboardServerOptions = {}): DashboardServer {
   const dashboardDirectory = options.dashboardDirectory ?? resolve(process.cwd(), 'dashboard');
-  const getSnapshot = options.getSnapshot ?? (() => createDashboardSnapshot({ balance: 10000, equity: 10000, floatingPnL: 0, dailyPnL: 0, currentDrawdown: 0, mode: 'DAY', openPositions: 0, scannerStatus: 'ready', activeSetups: 0, h4Status: 'waiting', m5Status: 'waiting', alerts: [createAlert({ type: 'bot-started', severity: 'info', message: 'dashboard online' })] }));
-  const getHealth = options.getHealth ?? (() => evaluateSystemHealth({ brokerConnected: true, marketDataFresh: true, riskEngineOnline: true, executionReady: true, diskPercentUsed: 0, memoryPercentUsed: 0, latencyMs: 0, tradingBlocked: false, accountVerified: true }));
+  const getSnapshot = options.getSnapshot ?? (() => createDashboardSnapshot({ balance: 0, equity: 0, floatingPnL: 0, dailyPnL: 0, currentDrawdown: 0, mode: 'DAY', openPositions: 0, scannerStatus: 'offline', activeSetups: 0, h4Status: 'no replay loaded', m5Status: 'no replay loaded', alerts: [createAlert({ type: 'data-unavailable', severity: 'warning', message: 'No broker or replay data connected; values are placeholders' })] }));
+  const getHealth = options.getHealth ?? (() => evaluateSystemHealth({ brokerConnected: false, marketDataFresh: false, riskEngineOnline: true, executionReady: false, diskPercentUsed: 0, memoryPercentUsed: 0, latencyMs: 0, tradingBlocked: true, accountVerified: false }));
   const server = createServer((request, response) => handleRequest(request, response, dashboardDirectory, getSnapshot, getHealth));
 
   return {
@@ -46,8 +46,9 @@ function handleRequest(request: IncomingMessage, response: ServerResponse, direc
   const filePath = path === '/' ? join(directory, 'index.html') : join(directory, path.slice(1));
   if (!resolve(filePath).startsWith(resolve(directory))) return sendText(response, 403, 'Forbidden');
   try {
+    const content = readFileSync(filePath);
     response.writeHead(200, { 'content-type': contentTypes[extname(filePath)] ?? 'application/octet-stream' });
-    response.end(readFileSync(filePath));
+    response.end(content);
   } catch {
     sendText(response, 404, 'Not found');
   }

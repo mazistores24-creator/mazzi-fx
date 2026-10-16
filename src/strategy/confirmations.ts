@@ -97,7 +97,10 @@ export function calculateIchimoku(candles: Candle[], periods: IchimokuPeriods = 
 }
 
 export function evaluateRsiConfirmation(rsi: number, direction: Exclude<Direction, 'neutral'>): { allowed: boolean; reason: string } {
-  const allowed = direction === 'bullish' ? rsi <= 10 : rsi >= 90;
+  const allowed = Number.isFinite(rsi)
+    && rsi >= 0
+    && rsi <= 100
+    && (direction === 'bullish' ? rsi <= 10 : rsi >= 90);
   return {
     allowed,
     reason: allowed ? 'RSI extreme confirmed' : 'RSI extreme not confirmed',

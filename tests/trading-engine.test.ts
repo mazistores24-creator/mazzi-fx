@@ -234,6 +234,7 @@ describe('strategy core', () => {
 
   it('qualifies a complete H4 + M5 trade setup only when all mandatory conditions pass', () => {
     const result = qualifyTrade({
+      direction: 'bullish',
       h4Valid: true,
       h4Breakout: true,
       h4FibZone: true,
@@ -263,6 +264,7 @@ describe('strategy core', () => {
 
   it('blocks qualification when any required stage is missing', () => {
     const result = qualifyTrade({
+      direction: 'bullish',
       h4Valid: true,
       h4Breakout: true,
       h4FibZone: true,
@@ -805,7 +807,10 @@ describe('strategy core', () => {
     expect(ichimoku.direction).toBe('bullish');
     expect(evaluateRsiConfirmation(10, 'bullish').allowed).toBe(true);
     expect(evaluateRsiConfirmation(11, 'bullish').allowed).toBe(false);
+    expect(evaluateRsiConfirmation(90, 'bullish').allowed).toBe(false);
+    expect(evaluateRsiConfirmation(10, 'bearish').allowed).toBe(false);
     expect(evaluateRsiConfirmation(90, 'bearish').allowed).toBe(true);
+    expect(evaluateRsiConfirmation(101, 'bearish').allowed).toBe(false);
   });
 
   it('creates emergency execution actions for protection failure and partial fills', () => {

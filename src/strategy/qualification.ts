@@ -1,4 +1,8 @@
+import type { Direction } from '../config/types.js';
+import { evaluateRsiConfirmation } from './confirmations.js';
+
 export interface QualificationInput {
+  direction: Exclude<Direction, 'neutral'>;
   h4Valid: boolean;
   h4Breakout: boolean;
   h4FibZone: boolean;
@@ -40,7 +44,7 @@ export function qualifyTrade(input: QualificationInput): QualificationResult {
     m5Retracement: input.m5Retracement,
     supplyDemand: input.supplyDemand,
     ichimoku: input.ichimoku,
-    rsi: input.rsi <= 10,
+    rsi: evaluateRsiConfirmation(input.rsi, input.direction).allowed,
     m5Confirmation: input.m5Confirmation,
     risk: input.riskOk,
     news: input.newsOk,
